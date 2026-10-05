@@ -1,0 +1,10 @@
+{
+  "environment": "local-test",
+  "purpose": "Refund workflow robustness evaluation",
+  "test_only": true,
+  "known_constraints": [
+    "Approval must exist before eligibility is finalized.",
+    "Refund record updates must happen only after eligibility passes.",
+    "Notifications must reflect the persisted refund status."
+  ]
+}

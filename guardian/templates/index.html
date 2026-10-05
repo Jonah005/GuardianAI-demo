@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Guardian Control Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Guardian home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 46" role="img"><path d="M20 2 37 8v12c0 11.8-6.7 20.6-17 24C9.7 40.6 3 31.8 3 20V8L20 2Z"/><path d="m12 23 5 5 11-12"/></svg>
+          </span>
+          <span><strong>GUARDIAN</strong><small>AI EVALUATION SYSTEM</small></span>
+        </a>
+        <div class="system-state"><span class="state-dot" id="stateDot"></span><span id="systemState">System ready</span></div>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow">LANGFLOW SECURITY HARNESS</div>
+        <h1>Test the whole workflow.<br><span>In one controlled run.</span></h1>
+        <p>Guardian maps your live flow, creates grounded attack scenarios, executes them through Langflow, evaluates the evidence, and publishes the final report. Every real tool call made during execution also passes through Guardian's own live enforcement gate, which allows, rejects, or escalates it using the same trained judgment &mdash; no hardcoded rules.</p>
+        <div class="model-picker" id="modelPicker">
+          <label class="model-picker-label" for="modelSelect">Guardian model</label>
+          <select id="modelSelect" class="model-select">
+            <option value="local">Fine-tuned Guardian (Colab)</option>
+            <option value="deepseek">DeepSeek (API key)</option>
+          </select>
+          <div class="model-key-row" id="deepseekRow" style="display:none;">
+            <input type="password" id="apiKeyInput" class="model-input" placeholder="Paste DeepSeek API key (sk-...)" autocomplete="off" />
+            <input type="text" id="modelNameInput" class="model-input" placeholder="Model (default: deepseek-chat)" autocomplete="off" />
+          </div>
+          <small class="model-hint" id="modelHint">Using the fine-tuned Guardian model served from Colab.</small>
+        </div>
+        <div class="model-picker" id="runHistoryPicker">
+          <label class="model-picker-label" for="runHistorySelect">View a run</label>
+          <select id="runHistorySelect" class="model-select">
+            <option value="">Live (current run)</option>
+          </select>
+          <small class="model-hint" id="runHistoryHint">Showing the live run. Pick a past run to view its results without running anything.</small>
+        </div>
+        <div class="run-actions">
+          <button class="run-button" id="runButton">
+            <span class="button-icon" aria-hidden="true">▶</span>
+            <span><strong>Run full evaluation</strong><small>Plan · Validate · Execute · Report</small></span>
+          </button>
+          <button class="stop-button" id="stopButton" disabled>Stop run</button>
+          <button class="rejudge-button" id="rejudgeButton" title="Re-score the latest run's evidence with the current judge — no re-generating or re-executing">Re-judge last run</button>
+          <button class="rejudge-button" id="explainButton" title="Ask the Guardian model to explain each confirmed issue and how to fix it">Explain &amp; fix</button>
+        </div>
+        <div class="safety-note"><span>!</span> Executes connected tools. Use only with your configured test environment.</div>
+      </section>
+
+      <section class="progress-panel" aria-label="Evaluation stages">
+        <div class="section-label"><span>RUN PIPELINE</span><span id="runId">No active run</span></div>
+        <div class="pipeline">
+          <div class="stage" data-stage="1"><span class="stage-index">01</span><div><strong>Inspect</strong><small>Read live flow</small></div></div>
+          <div class="connector"></div>
+          <div class="stage" data-stage="2"><span class="stage-index">02</span><div><strong>Generate</strong><small>Attack scenarios</small></div></div>
+          <div class="connector"></div>
+          <div class="stage" data-stage="3"><span class="stage-index">03</span><div><strong>Validate</strong><small>Ground & assess</small></div></div>
+          <div class="connector"></div>
+          <div class="stage" data-stage="4"><span class="stage-index">04</span><div><strong>Execute</strong><small>Guarded tool calls</small></div></div>
+          <div class="connector"></div>
+          <div class="stage" data-stage="5"><span class="stage-index">05</span><div><strong>Report</strong><small>Publish evidence</small></div></div>
+        </div>
+      </section>
+
+      <section class="dashboard">
+        <div class="metrics">
+          <article><span>Scenarios generated</span><strong id="generated">—</strong></article>
+          <article><span>Grounded candidates</span><strong id="grounded">—</strong></article>
+          <article><span>Scenarios executed</span><strong id="executed">—</strong></article>
+          <article class="danger-metric"><span>Vulnerabilities observed</span><strong id="observed">—</strong></article>
+          <article class="gate-metric" id="gateMetric"><span>Gate interventions</span><strong id="gateInterventions">—</strong></article>
+        </div>
+
+        <div class="workspace-grid">
+          <article class="terminal-card">
+            <div class="card-heading"><div><span class="mini-dot"></span>LIVE RUN LOG</div><span id="logStatus">Waiting</span></div>
+            <pre id="terminal" aria-live="polite"><span class="muted">Guardian is ready. Start a full evaluation when your test services are online.</span></pre>
+          </article>
+          <aside class="result-card">
+            <div class="card-heading"><div>FINAL RESULT</div><span id="resultBadge" class="badge neutral">Not run</span></div>
+            <div class="empty-result" id="emptyResult">
+              <div class="radar"><span></span></div>
+              <strong>Awaiting evaluation</strong>
+              <p>Run results and report links will appear here.</p>
+            </div>
+            <div class="result-content hidden" id="resultContent">
+              <div class="flow-name"><small>FLOW</small><strong id="flowName">—</strong></div>
+              <div class="category-list" id="categoryList"></div>
+              <div class="report-links" id="reportLinks"></div>
+            </div>
+          </aside>
+        </div>
+
+        <article class="remediation-card" id="remediationCard">
+          <div class="card-heading">
+            <div><span class="mini-dot"></span>REMEDIATION &mdash; WHY IT HAPPENED &amp; HOW TO FIX</div>
+            <button class="rejudge-button" id="exportPdfButton" disabled>Export PDF</button>
+          </div>
+          <div class="remediation-empty" id="remediationEmpty">
+            Run <strong>Explain &amp; fix</strong> to generate remediation for the confirmed issues.
+          </div>
+          <div class="remediation-list" id="remediationList"></div>
+        </article>
+      </section>
+    </main>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

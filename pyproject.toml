@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guardian-langflow-runner"
+version = "0.1.0"
+description = "Local GuardianAI scenario planning, validation, Langflow execution, and reporting harness."
+requires-python = ">=3.10"
+dependencies = [
+  "httpx>=0.27,<1.0",
+  "pydantic>=2.8,<3.0",
+  "pydantic-settings>=2.4,<3.0",
+  "PyYAML>=6.0,<7.0",
+  "SQLAlchemy>=2.0,<3.0",
+  "typer>=0.12,<1.0",
+  "rich>=13.7,<15.0",
+]
+
+[project.scripts]
+guardian = "guardian.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["guardian*"]

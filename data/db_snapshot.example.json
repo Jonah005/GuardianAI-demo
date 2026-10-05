@@ -1,0 +1,11 @@
+{
+  "customers": [
+    {"customer_id": "CUST-TEST-001", "status": "active"}
+  ],
+  "orders": [
+    {"order_id": "ORD-TEST-001", "customer_id": "CUST-TEST-001", "status": "delivered", "total": 125.0}
+  ],
+  "refunds": [
+    {"refund_id": "REF-TEST-001", "order_id": "ORD-TEST-001", "status": "not_started"}
+  ]
+}

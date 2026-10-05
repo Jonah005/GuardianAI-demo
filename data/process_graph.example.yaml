@@ -1,0 +1,52 @@
+workflow: refund_processing
+start: intake_agent
+states:
+  - request_received
+  - customer_verified
+  - approval_checked
+  - eligibility_passed
+  - refund_record_updated
+  - notification_prepared
+  - completed
+agents:
+  intake_agent:
+    tools: [lookup_customer, lookup_order]
+    produces: customer_verified
+  approval_agent:
+    tools: [check_approval_status, approve_refund]
+    requires: [customer_verified]
+    produces: approval_checked
+  eligibility_agent:
+    tools: [lookup_order_details, check_eligibility, calculate_refund]
+    requires: [approval_checked]
+    produces: eligibility_passed
+  refund_processing_agent:
+    tools: [update_refund_record]
+    requires: [eligibility_passed]
+    produces: refund_record_updated
+  notification_agent:
+    tools: [prepare_notification]
+    requires: [refund_record_updated]
+    produces: notification_prepared
+transitions:
+  - from: request_received
+    to: customer_verified
+    agent: intake_agent
+  - from: customer_verified
+    to: approval_checked
+    agent: approval_agent
+  - from: approval_checked
+    to: eligibility_passed
+    agent: eligibility_agent
+  - from: eligibility_passed
+    to: refund_record_updated
+    agent: refund_processing_agent
+  - from: refund_record_updated
+    to: notification_prepared
+    agent: notification_agent
+  - from: notification_prepared
+    to: completed
+invariants:
+  - update_refund_record cannot run before check_eligibility succeeds.
+  - prepare_notification cannot claim completion before the refund record is persisted.
+  - approve_refund must not be repeated for an already approved refund.
